@@ -5,12 +5,13 @@ open import Equality.Base
 open import Agda.Builtin.Unit
 open import Nat.Base
 open import Agda.Builtin.Sigma
+open import Agda.Primitive
 
-record Category : Set₁ where
+record Category {l l'} : Set (lsuc (l ⊔ l')) where
   field
     -- structure
-    Obj : Set
-    Hom : Obj → Obj → Set
+    Obj : Set l
+    Hom : Obj → Obj → Set l'
     id : ∀ (X : Obj) → Hom X X
     _∘_ : ∀ {X Y Z : Obj} → Hom Y Z → Hom X Y →  Hom X Z 
 
@@ -34,7 +35,7 @@ Category.assoc 𝟙 _ _ _ = refl
 {- define the empty/initial category 𝟘 -}
 data ⊥ : Set where
 
-𝟘 : Category
+𝟘 : Category {lzero} {lzero}
 Category.Obj 𝟘 = ⊥
 Category.Hom 𝟘 ()
 Category.id 𝟘 () 
@@ -57,5 +58,17 @@ Category.id Cayley-ℕ n = 0 , 0-neutral-+
 Category._∘_ Cayley-ℕ (l , m+l≡p) (k , n+k≡m) =
   (k + l) , ((sym (ass-of-+ _ k l) ∙ ([ (λ x → x + l) ] n+k≡m )) ∙ m+l≡p)
 Category.idl Cayley-ℕ (k , n+k≡m) = Σ≡ 0-neutral-+ (ℕ-set _ _)
-Category.idr Cayley-ℕ = {!!}
-Category.assoc Cayley-ℕ = {!!}
+Category.idr Cayley-ℕ (k , n+k≡m) = Σ≡ refl (ℕ-set _ _)
+Category.assoc Cayley-ℕ (k , n+k≡m) (l , m+l≡p) (h , p+h≡q) = Σ≡ (sym (ass-of-+ k l h)) (ℕ-set _ _)
+
+{- category of sets -}
+set : Category
+Category.Obj set = Set
+Category.Hom set X Y = X → Y
+Category.id set X = λ x → x
+Category._∘_ set g f = λ x → g (f x)
+Category.idl set f = refl
+Category.idr set f = refl
+Category.assoc set f g h = refl
+
+
